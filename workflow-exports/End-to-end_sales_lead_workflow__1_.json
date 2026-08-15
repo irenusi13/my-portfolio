@@ -1,0 +1,686 @@
+{
+  "name": "End-to-end sales lead workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "##   CAPTURE\nThe second someone hits submit on the site, this webhook grabs it and we send back a quick \"thanks, we'll be in touch\" so the form never feels like it hung or failed. Everything else happens behind the scenes from here.",
+        "height": 212,
+        "width": 364,
+        "color": 4
+      },
+      "id": "b849136e-ec22-49c0-9691-833d1a0a59f4",
+      "name": "Sticky Note - Capture",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2816,
+        464
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: \"received\", message: \"Thanks! We'll be in touch shortly.\" } }}",
+        "options": {}
+      },
+      "id": "ffd65bfc-37f2-45a9-9d25-ab1c396beae5",
+      "name": "2. Instant 200 Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -2448,
+        656
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize incoming payload into a consistent shape and validate for QUALITY,\n// not just presence. Presence-only checks let obvious junk/test submissions\n// (placeholder company names, gibberish messages) flow all the way through\n// the pipeline as \"valid\".\nconst body = $input.first().json.body || $input.first().json;\n\nconst normalized = {\n  name: (body.name || body.full_name || '').toString().trim(),\n  email: (body.email || '').toString().trim().toLowerCase(),\n  company: (body.company || body.company_name || '').toString().trim(),\n  company_size: Number(body.company_size || body.team_size || 0) || 0,\n  timeline: (body.timeline || '').toString().trim().toLowerCase(),\n  message: (body.message || body.notes || '').toString().trim(),\n  source: body.source || 'website_form',\n  received_at: new Date().toISOString()\n};\n\nconst reasons = [];\n\n// 1. Email: must exist AND actually look like an email.\nconst emailPattern = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\nif (!normalized.email) {\n  reasons.push('email missing');\n} else if (!emailPattern.test(normalized.email)) {\n  reasons.push('email format invalid');\n}\n\n// 2. Company: reject empty, too-short, or common placeholder values.\nconst junkCompanyWords = new Set(['you', 'me', 'test', 'testing', 'n/a', 'na', 'none', 'asdf', 'x', 'xx', 'xxx', 'company', '-', '.']);\nif (!normalized.company || normalized.company.length < 2) {\n  reasons.push('company missing or too short');\n} else if (junkCompanyWords.has(normalized.company.toLowerCase())) {\n  reasons.push('company looks like placeholder/test data');\n}\n\n// 3. Message: reject empty, too-short, or gibberish (repeated chars, filler words).\nconst repeatedCharPattern = /(.)\\1{2,}/; // e.g. \"blahhh\", \"yesss\", \"aaaa\"\nconst junkMessageWords = new Set(['blah', 'blahhh', 'asdf', 'asdfasdf', 'test', 'testing', 'lorem', 'lorem ipsum', 'n/a', '...']);\nconst msgClean = normalized.message.toLowerCase().trim();\nif (!normalized.message || normalized.message.length < 3) {\n  reasons.push('message missing or too short');\n} else if (junkMessageWords.has(msgClean) || repeatedCharPattern.test(msgClean)) {\n  reasons.push('message looks like test/spam text');\n}\n\n// 4. Name: reject empty, too-short, or placeholder values.\nconst junkNames = new Set(['test', 'testing', 'asdf', 'n/a', 'na', 'none', 'spam', 'x', 'xx']);\nif (!normalized.name || normalized.name.length < 2) {\n  reasons.push('name missing or too short');\n} else if (junkNames.has(normalized.name.toLowerCase())) {\n  reasons.push('name looks like placeholder/test data');\n}\n\nnormalized.is_valid = reasons.length === 0;\nnormalized.missing_fields = reasons;\n\nreturn [{ json: normalized }];"
+      },
+      "id": "5fc11790-2f1a-4668-9620-b9ab0eb040e9",
+      "name": "3. Normalize & Validate Lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2448,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "valid-check",
+              "leftValue": "={{ $json.is_valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f8a22694-464a-4ea2-bb1e-bfedead630f7",
+      "name": "4. Valid Lead?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2224,
+        848
+      ]
+    },
+    {
+      "parameters": {
+        "content": "##  AI QUALIFY \nThis is where our AI assistant, reads the lead and decides how hot it is then hands back a priority, an urgency level, and a one-line summary for the team.",
+        "height": 248,
+        "width": 368,
+        "color": 5
+      },
+      "id": "f5128fd3-9f4b-4687-9594-1fc7a810f848",
+      "name": "Sticky Note - Qualify",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2192,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "content": "##  LOG\nThe lead gets upserted (not just created) in HubSpot, keyed on email so if someone fills the form out twice, we update their record instead of cluttering the CRM with duplicates. ",
+        "height": 264,
+        "width": 276,
+        "color": 6
+      },
+      "id": "d7597eed-841b-43ff-af5e-12ec2e6e14d2",
+      "name": "Sticky Note - CRM",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1760,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "content": "##  FOLLOW UP + NOTIFY\nA first-touch email goes out automatically, so nobody's waiting on a person to remember to reply. At the same time, the sales team gets a Slack message with the lead's details ",
+        "height": 204,
+        "width": 448,
+        "color": 7
+      },
+      "id": "80c7cbbb-1827-4a53-961e-4a484b23ff72",
+      "name": "Sticky Note - Follow-up & Notify",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1424,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "content": "##  SAFETY NET: ERROR HANDLING\nIf anything fails along the way, it gets caught here instead of vanishing. The team gets an alert in Slack and a backup row gets logged in a Sheet, so there's always a paper trail and nothing falls through the cracks.",
+        "height": 208,
+        "width": 420,
+        "color": 3
+      },
+      "id": "02b7afbe-4dbf-438f-8713-2d8e1bfa7ee3",
+      "name": "Sticky Note - Error Handling",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        784
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Missing-field lead — route into the alert pipeline with a clear reason.\nconst lead = $input.first().json;\nreturn [{\n  json: {\n    node: { name: '3. Normalize & Validate Lead' },\n    error: { message: 'Lead missing required field(s): ' + (lead.missing_fields || []).join(', ') },\n    email: lead.email || 'unknown',\n    company: lead.company || 'unknown'\n  }\n}];"
+      },
+      "id": "47417860-44b4-4316-b3a4-678eec5fdf0e",
+      "name": "4a. Format Invalid Lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-lead2",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "ee6df175-9011-48d4-95e5-ec1345c4d6fd",
+      "name": "1. New Lead (Webhook)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2672,
+        752
+      ],
+      "webhookId": "3210d9f1-32d5-4a15-8cb8-23ac73571dc3"
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "maxTokensToSample": 4096
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -1984,
+        944
+      ],
+      "id": "3ac100da-0b1f-4484-908a-b6aa038f2228",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "j85ZDb6hd5WnS7IA",
+          "name": "Groq account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"response\": {\n    \"generations\": [\n      [\n        {\n          \"text\": \"{\\\"output\\\": {\\\"priority\\\": \\\"Hot\\\", \\\"urgency\\\": \\\"High\\\", \\\"summary\\\": \\\"Sales team scaling\\\"}}\",\n          \"generationInfo\": {\n            \"finish_reason\": \"stop\"\n          }\n        }\n      ]\n    ]\n  },\n  \"tokenUsage\": {\n    \"completionTokens\": 25,\n    \"promptTokens\": 710,\n    \"totalTokens\": 735\n  }\n}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1856,
+        944
+      ],
+      "id": "a03ff071-99f3-430c-8064-81bea4c9419e",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze the following B2B SaaS lead.\n\nName:\n{{ $json.name }}\n\nEmail:\n{{ $json.email }}\n\nCompany:\n{{ $json.company }}\n\nCompany Size:\n{{ $json.company_size }}\n\nTimeline:\n{{ $json.timeline }}\n\nLead Source:\n{{ $json.source }}\n\nMessage:\n{{ $json.message }}\n\nDetermine:\n\n- Priority\n- Urgency\n- Summary\n\n\nReturn JSON only.",
+        "hasOutputParser": true,
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are Athena, an AI Sales Qualification Assistant for a B2B SaaS company called Loomwork Automation.\n\nYour job is to analyze an incoming lead submission and determine how valuable the lead is.  Evaluate the lead using the following signals:  \n• Company size \n• Urgency or timeline \n• Clarity of the request \n\n Return ONLY valid JSON.  \n\nUse this schema: \n {     \n\"priority\": \"<Hot|Standard>\",  \n\"urgency\": \"<High|Medium|Low>\",   \n\"summary\": \"<One sentence summarizing the lead's request>\" }  \n\n\nRules:  \n- Do not invent facts. \n- Base conclusions only on the information provided. \n- Keep the summary under 20 words. \n- Return JSON only."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -2000,
+        720
+      ],
+      "id": "b5637631-f01b-4733-b1b7-0cc5266d56da",
+      "name": "5. AI Agent"
+    },
+    {
+      "parameters": {
+        "authentication": "appToken",
+        "email": "={{ $('1. New Lead (Webhook)').item.json.body.email }}",
+        "additionalFields": {
+          "customPropertiesUi": {
+            "customPropertiesValues": [
+              {
+                "property": "lead_qualification",
+                "value": "={{ $json.output.response.generations[0][0].priority }}"
+              },
+              {
+                "property": "lead_source",
+                "value": "={{ $('4. Valid Lead?').item.json.source }}"
+              },
+              {
+                "property": "qualification_notes",
+                "value": "={{ $json.output.response.generations[0][0].summary }}"
+              },
+              {
+                "property": "lead_urgency",
+                "value": "={{ $json.output.response.generations[0][0].urgency }}"
+              }
+            ]
+          },
+          "firstName": "={{ $('3. Normalize & Validate Lead').item.json.name.split(' ')[0] }} ",
+          "lastName": "={{ $('3. Normalize & Validate Lead').item.json.name.split(' ').slice(1).join(' ') }}"
+        },
+        "options": {}
+      },
+      "id": "52831bc3-7d76-4588-8824-8277966dcdd6",
+      "name": "6. Upsert Contact in HubSpot",
+      "type": "n8n-nodes-base.hubspot",
+      "typeVersion": 2,
+      "position": [
+        -1648,
+        720
+      ],
+      "credentials": {
+        "hubspotAppToken": {
+          "id": "jRGKHOveahjtOtSW",
+          "name": "HubSpot account 2"
+        }
+      },
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "= {{ $('4. Valid Lead?').item.json.email }}",
+        "subject": "=Follow-Up From Loomwork Automation",
+        "emailType": "text",
+        "message": "=Dear {{ $('4. Valid Lead?').item.json.name.split(' ')[0] }},\n\nI hope you're doing well. I wanted to follow up on your interest in learning more about Loomwork Automation's pricing options for {{ $('4. Valid Lead?').item.json.company }}. We'd be happy to provide you with more information and answer any questions you may have.\n\nPlease let me know if you'd like to schedule a call to discuss further.\n\nBest regards, \nAthena",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "e5716ce4-5547-4999-8146-f0421dc29728",
+      "name": "7. Send Lead Follow-Up",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1424,
+        656
+      ],
+      "webhookId": "23d85987-4458-465f-83f2-281b07f72b06",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "MhVvrra7jHKedqPc",
+          "name": "Gmail account 6"
+        }
+      },
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0BMPPB98D7",
+          "mode": "id"
+        },
+        "text": "={{ ($('5. AI Agent').item.json.output.response.generations[0][0].priority == 'Hot' ? '🔥 *HOT LEAD*' : '🟦 *New Lead*') \n+ '\\n*Name:* ' + $('4. Valid Lead?').item.json.name \n+ '\\n*Company:* ' + $('4. Valid Lead?').item.json.company + ' (' + $('4. Valid Lead?').item.json.company_size + ' people)' \n+ '\\n*Timeline:* ' + $('4. Valid Lead?').item.json.timeline \n+ '\\n*Qualification:* ' + $('5. AI Agent').item.json.output.response.generations[0][0].priority \n+ '\\n*Why:* ' + $('5. AI Agent').item.json.output.response.generations[0][0].summary }}\n",
+        "otherOptions": {}
+      },
+      "id": "16c5cbd8-6586-4d19-99e0-1dd48691f8fa",
+      "name": "8. Notify Sales Team (Slack)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        -1200,
+        576
+      ],
+      "webhookId": "2c6ad620-46a8-4a08-bae7-32f1ee07c656",
+      "credentials": {
+        "slackApi": {
+          "id": "4703eAdRfNmOZEcI",
+          "name": "Slack account 4"
+        }
+      },
+      "continueOnFail": true,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Normalize whatever failed into one clean alert payload.\nconst item = $input.first().json;\n\nreturn [{\n  json: {\n    failed_step: item.node?.name || $input.first().json.error?.node?.name || 'Unknown step',\n    error_message: item.error?.message || item.message || 'Unknown error',\n    lead_email: item.email || item.json?.email || 'unknown',\n    lead_company: item.company || item.json?.company || 'unknown',\n    occurred_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "79871167-50b5-444c-843c-775aa54e498f",
+      "name": "9. Format Alert Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        800
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "C0BNUBSLHFS"
+        },
+        "text": "={{ '🚨 *Lead Workflow Failure*\\n*Step:* ' + $json.failed_step + '\\n*Lead:* ' + $json.lead_email + ' (' + $json.lead_company + ')' + '\\n*Error:* ' + $json.error_message + '\\n*Time:* ' + $json.occurred_at.slice(0,16).replace('T',' ') + '\\n\\n_This lead did NOT complete the pipeline — please check manually._' }}\n\n\n",
+        "otherOptions": {}
+      },
+      "id": "b62662b5-d63b-40e1-bccc-7071ed74bf03",
+      "name": "10a. ALERT: Post to #automation-alerts",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [
+        -752,
+        752
+      ],
+      "webhookId": "9e2f8417-5643-42ad-833c-43ed1b135db7",
+      "credentials": {
+        "slackApi": {
+          "id": "4703eAdRfNmOZEcI",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1pvJExLbU9NkyghCYLTD1ky0vqMB1_oxF1vwIXT1at0E",
+          "mode": "list",
+          "cachedResultName": "Loomwork Automation",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pvJExLbU9NkyghCYLTD1ky0vqMB1_oxF1vwIXT1at0E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1pvJExLbU9NkyghCYLTD1ky0vqMB1_oxF1vwIXT1at0E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Occurred At ": "={{$json.occurred_at.slice(0,16).replace('T',' ')}}",
+            "Lead Email": "={{ $json.lead_email }}",
+            " Lead Company ": "={{ $json.lead_company }}",
+            "Error Message": "={{ $json.error_message }}",
+            " Failed Step ": "={{ $json.failed_step }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Occurred At ",
+              "displayName": "Occurred At ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": " Failed Step ",
+              "displayName": " Failed Step ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Lead Email",
+              "displayName": "Lead Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": " Lead Company ",
+              "displayName": " Lead Company ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Error Message",
+              "displayName": "Error Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "16fa8538-330b-4da2-a5d2-f27fd6edddd3",
+      "name": "10b. Backup Log - Failed Leads",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -752,
+        944
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UOtadkkaLYicGUoG",
+          "name": "Google Sheets account 7"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "1. New Lead (Webhook)": [
+      {
+        "json": {
+          "headers": {
+            "host": "kcemma.dedyn.io",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36 Edg/151.0.0.0",
+            "content-length": "390",
+            "accept": "*/*",
+            "accept-encoding": "gzip, deflate, br, zstd",
+            "accept-language": "en-US,en;q=0.9",
+            "content-type": "application/json",
+            "origin": "null",
+            "priority": "u=1, i",
+            "sec-ch-ua": "\"Not=A?Brand\";v=\"99\", \"Microsoft Edge\";v=\"151\", \"Chromium\";v=\"151\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "via": "2.0 Caddy",
+            "x-forwarded-for": "102.89.23.177",
+            "x-forwarded-host": "kcemma.dedyn.io",
+            "x-forwarded-proto": "https"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "name": "Bryce Rhea",
+            "email": "khaybeesanusi@gmail.com",
+            "company": "Portmonth Corp",
+            "company_size": 50,
+            "timeline": "this month",
+            "message": "We're struggling to keep up with inbound leads, follow-ups, and CRM updates. We'd like a solution and we're hoping to have everything implemented before the end of this month because we're launching a new marketing campaign soon.",
+            "source": "website_form"
+          },
+          "webhookUrl": "https://kcemma.dedyn.io/webhook/new-lead2",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "3. Normalize & Validate Lead": {
+      "main": [
+        [
+          {
+            "node": "4. Valid Lead?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4. Valid Lead?": {
+      "main": [
+        [
+          {
+            "node": "5. AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "4a. Format Invalid Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4a. Format Invalid Lead": {
+      "main": [
+        [
+          {
+            "node": "9. Format Alert Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "1. New Lead (Webhook)": {
+      "main": [
+        [
+          {
+            "node": "3. Normalize & Validate Lead",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "2. Instant 200 Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "5. AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "5. AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "5. AI Agent": {
+      "main": [
+        [
+          {
+            "node": "6. Upsert Contact in HubSpot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "6. Upsert Contact in HubSpot": {
+      "main": [
+        [
+          {
+            "node": "7. Send Lead Follow-Up",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "9. Format Alert Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "7. Send Lead Follow-Up": {
+      "main": [
+        [
+          {
+            "node": "8. Notify Sales Team (Slack)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "9. Format Alert Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "8. Notify Sales Team (Slack)": {
+      "main": [
+        [],
+        [
+          {
+            "node": "9. Format Alert Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "9. Format Alert Payload": {
+      "main": [
+        [
+          {
+            "node": "10a. ALERT: Post to #automation-alerts",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "10b. Backup Log - Failed Leads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "2a9a9842-c3ec-4720-a3b0-b3f53ebb42f2",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "51ee086945e7169fca895c425d8a00d1132e92da67aa4ae661fe13d18cb30c3b"
+  },
+  "nodeGroups": [],
+  "id": "KPbRpNyfrt36tVSh",
+  "tags": []
+}

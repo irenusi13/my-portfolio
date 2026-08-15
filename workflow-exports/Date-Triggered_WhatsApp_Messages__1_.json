@@ -1,0 +1,522 @@
+{
+  "name": "Date-Triggered WhatsApp Messages",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "aa3fab32-6718-4e77-9e15-e77ba7b6594c",
+      "name": "Daily 8am Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -896,
+        336
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1cVwcpL7UBAv4R_iLGfOS8UD7ve4IyET7hg77doJdpIU",
+          "mode": "list",
+          "cachedResultName": "Fly Max Co. Customer Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cVwcpL7UBAv4R_iLGfOS8UD7ve4IyET7hg77doJdpIU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 448689884,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cVwcpL7UBAv4R_iLGfOS8UD7ve4IyET7hg77doJdpIU/edit#gid=448689884"
+        },
+        "options": {}
+      },
+      "id": "8137ce5e-c355-4b04-a8c4-579d5e080b5a",
+      "name": "Read Spreadsheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -672,
+        336
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UOtadkkaLYicGUoG",
+          "name": "Google Sheets account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "06a78299-dffa-4e32-9984-8f53923f3040",
+                    "leftValue": "={{ $json['Departure Date'] }}",
+                    "rightValue": "={{ DateTime.now().plus({ days: 3 }).toISODate() }}",
+                    "operator": {
+                      "type": "dateTime",
+                      "operation": "equals"
+                    }
+                  },
+                  {
+                    "id": "d1a2b3c4-1111-2222-3333-444455556666",
+                    "leftValue": "={{ $json['Pre-Trip Status'] }}",
+                    "rightValue": "SENT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Departure Message"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "c4fb4010-eb90-4d35-b5dc-ae7879930cd5",
+                    "leftValue": "={{ $now.toFormat('yyyy-MM-dd') }}",
+                    "rightValue": "={{ DateTime.fromISO($json['Return Date']).plus({ days: 1 }).toISODate() }}",
+                    "operator": {
+                      "type": "dateTime",
+                      "operation": "equals"
+                    }
+                  },
+                  {
+                    "id": "e5f6a7b8-5555-6666-7777-888899990000",
+                    "leftValue": "={{ $json['Post-Trip Status'] }}",
+                    "rightValue": "SENT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEquals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Return Message"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        336
+      ],
+      "id": "7fe2b6c6-03f9-4b38-afa1-b49258d6cdf0",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance185878/messages/chat",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "gvywlhypbfs7id6r"
+            },
+            {
+              "name": "to",
+              "value": "={{ $json['WhatsApp Number'] }}"
+            },
+            {
+              "name": "body",
+              "value": "Hi! Your trip is just 3 days away. We hope you're as excited as we are! \n\nQuick reminder to double-check your passport, travel documents and luggage so you're all set. If you have any last-minute questions, just send us a message❤️\n\nHave an amazing trip and thank you for choosing Fly Max Co. "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "72352937-f6b3-4863-889f-eb7674854ac5",
+      "name": "Send Pre-Trip WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1cVwcpL7UBAv4R_iLGfOS8UD7ve4IyET7hg77doJdpIU",
+          "mode": "list",
+          "cachedResultName": "Fly Max Co. Customer Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cVwcpL7UBAv4R_iLGfOS8UD7ve4IyET7hg77doJdpIU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 448689884,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cVwcpL7UBAv4R_iLGfOS8UD7ve4IyET7hg77doJdpIU/edit#gid=448689884"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Read Spreadsheet').item.json.row_number }}",
+            "Pre-Trip Status": "SENT"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "WhatsApp Number",
+              "displayName": "WhatsApp Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Departure Date",
+              "displayName": "Departure Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Return Date",
+              "displayName": "Return Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Pre-Trip Status",
+              "displayName": "Pre-Trip Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Post-Trip Status",
+              "displayName": "Post-Trip Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "6536558c-0cc7-41c2-aa54-9ad4d89d5f88",
+      "name": "Mark Pre-Trip Sent",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        0,
+        240
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UOtadkkaLYicGUoG",
+          "name": "Google Sheets account 7"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.ultramsg.com/instance185878/messages/chat",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "token",
+              "value": "gvywlhypbfs7id6r"
+            },
+            {
+              "name": "to",
+              "value": "={{ $('Read Spreadsheet').item.json['WhatsApp Number'] }}"
+            },
+            {
+              "name": "body",
+              "value": "Hi,\n\nWelcome back! We hope you enjoyed your trip. We just wanted to check in and say thank you for trusting Fly Max Co. with your trip. It truly means a lot to us. ❤️\n\nWe can't wait to help you plan your next adventure!"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "db054dae-c6af-4da9-9cdd-fd84db8e406b",
+      "name": "Send Post-Trip WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -224,
+        432
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1cVwcpL7UBAv4R_iLGfOS8UD7ve4IyET7hg77doJdpIU",
+          "mode": "list",
+          "cachedResultName": "Fly Max Co. Customer Log",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cVwcpL7UBAv4R_iLGfOS8UD7ve4IyET7hg77doJdpIU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 448689884,
+          "mode": "list",
+          "cachedResultName": "Sheet2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1cVwcpL7UBAv4R_iLGfOS8UD7ve4IyET7hg77doJdpIU/edit#gid=448689884"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Read Spreadsheet').item.json.row_number }}",
+            "Post-Trip Status": "SENT"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "WhatsApp Number",
+              "displayName": "WhatsApp Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Departure Date",
+              "displayName": "Departure Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Return Date",
+              "displayName": "Return Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Pre-Trip Status",
+              "displayName": "Pre-Trip Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Post-Trip Status",
+              "displayName": "Post-Trip Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "b5606b8d-a56d-4954-bdff-4c5ad3c95fee",
+      "name": "Mark Post-Trip Sent",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        0,
+        432
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UOtadkkaLYicGUoG",
+          "name": "Google Sheets account 7"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily 8am Check": {
+      "main": [
+        [
+          {
+            "node": "Read Spreadsheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Spreadsheet": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send Pre-Trip WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Post-Trip WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Pre-Trip WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Mark Pre-Trip Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Post-Trip WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Mark Post-Trip Sent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "dc89762e-b51d-4bd8-a476-d53783af17a6",
+  "meta": {
+    "instanceId": "51ee086945e7169fca895c425d8a00d1132e92da67aa4ae661fe13d18cb30c3b"
+  },
+  "nodeGroups": [],
+  "id": "wysbDS0MXLxFqiuV",
+  "tags": []
+}

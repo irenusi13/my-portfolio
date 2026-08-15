@@ -1,0 +1,667 @@
+{
+  "name": "TOYA",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        656
+      ],
+      "id": "8e6b2838-3f28-4591-9a53-f8fd6456fd9a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "nF5zeRqgurjrTftT",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        256,
+        832
+      ],
+      "id": "fee31e9d-d017-4859-833f-cf375c588ce1",
+      "name": "Respond to Webhook1"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -480,
+        1040
+      ],
+      "id": "99a2b987-00ca-4bee-a4f6-f932db794284",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "nF5zeRqgurjrTftT",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": " Input Routing\n\nRoutes the request based on input type: PDF file or Text.",
+        "height": 112
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -912,
+        512
+      ],
+      "typeVersion": 1,
+      "id": "f6126533-cf2e-491b-8b21-9d008bb688b3",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": " TRIGGER\n\nReceives requests from Toya (frontend) to start the wrkflow"
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1152,
+        816
+      ],
+      "typeVersion": 1,
+      "id": "09258264-62c6-4464-8603-3211ccc519a5",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "Document Processing\n\nExtracts text from uploaded documents (PDF)",
+        "height": 112,
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -576,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "a1a4e281-0862-4d93-a2df-93dc2b09ea4b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "Response\n\nFormats and returns the result to Toya(frontend)",
+        "height": 112
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        592,
+        400
+      ],
+      "typeVersion": 1,
+      "id": "4b129039-73d7-4ba0-8dc4-bba594800573",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "AI Processing\n\nToya AI analyzes the content and generates study materials",
+        "height": 112
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        176,
+        272
+      ],
+      "typeVersion": 1,
+      "id": "30ff0cdc-b60b-459b-829f-4a79eafcb3d9",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.body.inputType }}",
+                    "rightValue": "pdf",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "5ec4e534-66be-4cfc-bacc-ae8de8fabd4e"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "PDF"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5e1a1131-958c-48d8-a3e5-e2e273b6e8ea",
+                    "leftValue": "={{ $json.body.inputType }}",
+                    "rightValue": "text",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "TEXT"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -832,
+        688
+      ],
+      "id": "a395a08b-5ad7-4a44-b794-afb85c9120c6",
+      "name": "Route by Input Type"
+    },
+    {
+      "parameters": {
+        "jsCode": "const base64String = $input.item.json.body.fileContent;\nconst fileName = $input.item.json.body.fileName;\n\nconst ext = fileName.split('.').pop().toLowerCase();\nconst mimeTypes = {\n  pdf: 'application/pdf',\n  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',\n  doc: 'application/msword',\n  txt: 'text/plain'\n};\nconst mimeType = mimeTypes[ext] || 'application/octet-stream';\n\nconst binaryData = await this.helpers.prepareBinaryData(\n  Buffer.from(base64String, 'base64'),\n  fileName,\n  mimeType\n);\n\nreturn {\n  json: $input.item.json,\n  binary: {\n    data: binaryData\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        544
+      ],
+      "id": "b7864307-2f31-4ed6-9bdf-3c5f567c1ece",
+      "name": "Parse PDF file"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2cedd1d2-8f9f-4760-aeac-3ba67bf65c34",
+              "name": "Study Mode",
+              "value": "={{ $json.body.modes }}",
+              "type": "array"
+            },
+            {
+              "id": "68d5eca9-20bb-49aa-879d-bf0fed449135",
+              "name": "Subject",
+              "value": "={{ $('Webhook Trigger ').item.json.body.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "12271a55-99a4-4e74-8339-43ff2f1ef505",
+              "name": "Grade Level",
+              "value": "={{ $('Webhook Trigger ').item.json.body.gradeLevel }}",
+              "type": "string"
+            },
+            {
+              "id": "58e8ed21-48b7-4663-a705-8ffbd5497288",
+              "name": "Additional Context",
+              "value": "={{ $('Webhook Trigger ').item.json.body.additionalContext }}",
+              "type": "string"
+            },
+            {
+              "id": "3ba6e1d8-f219-4e69-8842-165113861a3c",
+              "name": "Exam Purpose",
+              "value": "={{ $('Webhook Trigger ').item.json.body.examPurpose }}",
+              "type": "string"
+            },
+            {
+              "id": "13d2690e-a55f-4185-959d-672250f25d0e",
+              "name": "Input Type",
+              "value": "={{ $('Webhook Trigger ').item.json.body.inputType }}",
+              "type": "string"
+            },
+            {
+              "id": "d2cf6fc0-7474-4de7-8b69-6b0cd59ee4ff",
+              "name": "Text Content",
+              "value": "={{ $json.body.textContent }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -608,
+        832
+      ],
+      "id": "7090926a-f96d-407c-b253-e971a6497083",
+      "name": "Prepare Text Input"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        544
+      ],
+      "id": "21e32466-2f4c-4754-97d9-9e7e6691d639",
+      "name": "Extract Text from PDF File"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2cedd1d2-8f9f-4760-aeac-3ba67bf65c34",
+              "name": "Study Mode",
+              "value": "={{ $('Webhook Trigger ').item.json.body.mode }}",
+              "type": "string"
+            },
+            {
+              "id": "68d5eca9-20bb-49aa-879d-bf0fed449135",
+              "name": "Subject",
+              "value": "={{ $('Webhook Trigger ').item.json.body.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "12271a55-99a4-4e74-8339-43ff2f1ef505",
+              "name": "Grade Level",
+              "value": "={{ $('Webhook Trigger ').item.json.body.gradeLevel }}",
+              "type": "string"
+            },
+            {
+              "id": "58e8ed21-48b7-4663-a705-8ffbd5497288",
+              "name": "Additional Context",
+              "value": "={{ $('Webhook Trigger ').item.json.body.additionalContext }}",
+              "type": "string"
+            },
+            {
+              "id": "3ba6e1d8-f219-4e69-8842-165113861a3c",
+              "name": "Exam Purpose",
+              "value": "={{ $('Webhook Trigger ').item.json.body.examPurpose }}",
+              "type": "string"
+            },
+            {
+              "id": "13d2690e-a55f-4185-959d-672250f25d0e",
+              "name": "Input Type",
+              "value": "={{ $('Webhook Trigger ').item.json.body.inputType }}",
+              "type": "string"
+            },
+            {
+              "id": "d2cf6fc0-7474-4de7-8b69-6b0cd59ee4ff",
+              "name": "File Content",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "740d691f-c1c4-4d68-b7e1-0b51ca1274f9",
+              "name": "File Name",
+              "value": "={{ $('Webhook Trigger ').item.json.body.fileName }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        544
+      ],
+      "id": "a095609e-4a3e-4711-b943-9bdf9c9c0a06",
+      "name": "Prepare Data for AI"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Study Material: {{ $json['Text Content'] }}\n\nStudy Mode: {{ $json['Study Mode'] }}\n\nSubject: {{ $json.Subject }}\n\nGrade Level: {{ $json['Grade Level'] }}\n\nExam Purpose: {{ $json['Exam Purpose'] }}\n\nAdditional Instructions: {{ $json['Additional Context'] }}\n\n\nYou will receive one or more Study Modes in a single request. Follow these rules strictly:\n\n- If ONE mode is given → return ONE JSON response for that mode only\n- If TWO modes are given → return a JSON array with TWO objects, one per mode\n- If THREE modes are given → return a JSON array with THREE objects, one per mode\n\nReturn only valid JSON. Nothing else.",
+        "options": {
+          "systemMessage": "You are Toya, a warm, intelligent and encouraging AI study assistant built to help students learn faster and perform better in exams. You adapt everything you generate — language, depth, complexity and examples — based on the student's grade level and context.\n\n---\n\n## HOW YOU ADAPT BY GRADE LEVEL\n\nGrade 1–6: Use very simple English. Short sentences. Everyday analogies (e.g. \"think of it like your lunchbox\"). Avoid technical terms — if you must use one, explain it immediately in the simplest way possible.\n\nJSS 1–3: Clear, friendly language. Relatable examples from everyday Nigerian student life. Introduce subject-specific vocabulary gently with brief explanations.\n\nSS1–SS3: Use proper academic language. Reference WAEC, NECO, or JAMB exam style where relevant. Include exam tips and pattern recognition where helpful.\n\n100–400 Level (University): Full academic depth. Technical terminology expected. Reference theories, models, and real-world applications. Be precise and thorough.\n\nIf no grade level is provided, default to SS2 level.\n\n---\n\n## HOW MANY MODES TO GENERATE\n\nYou will receive one or more Study Modes in a single request. Follow these rules strictly:\n\n- If ONE mode is given → return ONE JSON response for that mode only\n- If TWO modes are given → return a JSON array with TWO objects, one per mode\n- If THREE modes are given → return a JSON array with THREE objects, one per mode\n\nEach object in the array must follow this wrapper:\n{\n  \"mode\": \"summary | flashcards | quiz\",\n  \"data\": ...mode specific JSON here...\n}\n\nSingle mode example (do NOT wrap in array):\n{\n  \"mode\": \"flashcards\",\n  \"data\": [{\"question\": \"\", \"answer\": \"\"}]\n}\n\nMultiple modes example (wrap ALL in one array):\n[\n  { \"mode\": \"summary\",    \"data\": { \"topics\": [], \"definitions\": [], \"takeaways\": [] } },\n  { \"mode\": \"flashcards\", \"data\": [{\"question\": \"\", \"answer\": \"\"}] },\n  { \"mode\": \"quiz\",       \"data\": [{\"question\": \"\", \"options\": [], \"answer\": \"\"}] }\n]\n\nNEVER mix these — if only one mode is requested, return a plain object, not an array.\n\n---\n\n## WHAT YOU GENERATE\n\nYou will receive study material (extracted from a document or pasted text) along with one or more Study Modes. Based on the Study Mode(s), generate the corresponding output(s):\n\n---\n\n### Study Mode: summary\n\nGenerate a structured study summary of the material. The data value must be this exact object:\n\n{\n  \"topics\": [\"topic 1\", \"topic 2\", \"topic 3\"],\n  \"definitions\": [\n    {\"term\": \"Term Name\", \"meaning\": \"Clear explanation tailored to grade level\"}\n  ],\n  \"takeaways\": [\n    \"Key point 1 the student must remember\",\n    \"Key point 2 the student must remember\",\n    \"Key point 3 the student must remember\",\n    \"Key point 4 the student must remember\",\n    \"Key point 5 the student must remember\"\n  ]\n}\n\nRules:\n- topics: 3 to 5 key topic areas covered in the material\n- definitions: 4 to 6 important terms defined at the student's level\n- takeaways: exactly 5 bullet points — the most important things to remember\n- Tailor every word to the grade level provided\n- If an exam purpose is provided (e.g. WAEC), focus on commonly tested areas\n\n---\n\n### Study Mode: flashcards\n\nGenerate exactly 10 flashcards. The data value must be this exact array:\n\n[\n  {\"question\": \"Question here?\", \"answer\": \"Answer here\"}\n]\n\nRules:\n- Exactly 10 flashcard objects, no more, no less\n- Questions should test understanding, not just memory\n- Answers should be concise but complete\n- For lower grades: simple direct questions and short answers\n- For higher grades and exam prep: use past-question style phrasing\n- Cover different parts of the material, do not repeat the same concept twice\n- Do not number the questions\n\n---\n\n### Study Mode: quiz\n\nGenerate exactly 10 multiple choice questions. The data value must be this exact array:\n\n[\n  {\n    \"question\": \"Which pigment absorbs light during photosynthesis?\",\n    \"options\": [\"Hemoglobin\", \"Chlorophyll\", \"Melanin\", \"Keratin\"],\n    \"answer\": \"Chlorophyll\"\n  }\n]\n\nRules:\n- Exactly 10 question objects\n- options is an array of 4 plain strings — NO \"A.\" \"B.\" \"C.\" \"D.\" prefixes whatsoever\n- answer must be the exact plain string of the correct option, copied word for word from the options array\n- If answer does not exactly match one of the 4 option strings character for character, it is wrong — double check before returning\n- Distractors must be plausible — not obviously wrong\n- For SS students: use WAEC/JAMB/NECO past question style\n- For university students: use application and analysis based questions\n- For primary and JSS: use straightforward factual questions\n- Cover a spread of topics, do not repeat the same concept in multiple questions\n\n---\n\n## CRITICAL OUTPUT RULES\n\n1. Return ONLY the JSON — no introductory text, no explanation, no markdown code fences, no backticks\n2. The JSON must be valid and parseable — no trailing commas, no comments inside JSON\n3. Single mode = plain object. Multiple modes = array of objects. Never get this wrong.\n4. Never break character or mention that you are an AI model — you are Toya\n5. Never say \"I cannot\" or \"I don't have access\" — work with whatever material is provided\n6. If the material is very short or thin, generate the best possible output from what is available\n7. Always maintain Toya's warm, encouraging personality in the wording of takeaways and answers\n8. Be concise. Generate the minimum tokens needed to fulfill the request accurately. Do not add explanations, preamble or commentary outside the JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -384,
+        832
+      ],
+      "id": "9b6b68ee-f167-4678-93b7-108b57cbfcd2",
+      "name": "Toya AI Agent"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Study Material:\n{{ $json['File Content'] }}\n\nStudy Mode: {{ $json['Study Mode'] }}\n\nSubject: {{ $json.Subject }}\n\nGrade Level: {{ $json['Grade Level'] }}\n\nExam Purpose: {{ $json['Exam Purpose'] }}\n\nAdditional Instructions: {{ $json['Additional Context'] }}\n\n\n\nYou will receive one or more Study Modes in a single request. Follow these rules strictly:\n\n- If ONE mode is given → return ONE JSON response for that mode only\n- If TWO modes are given → return a JSON array with TWO objects, one per mode\n- If THREE modes are given → return a JSON array with THREE objects, one per mode\n\nReturn only valid JSON. Nothing else.",
+        "options": {
+          "systemMessage": "You are Toya, a warm, intelligent and encouraging AI study assistant built to help students learn faster and perform better in exams. You adapt everything you generate — language, depth, complexity and examples — based on the student's grade level and context.\n\n---\n\n## HOW YOU ADAPT BY GRADE LEVEL\n\nGrade 1–6: Use very simple English. Short sentences. Everyday analogies (e.g. \"think of it like your lunchbox\"). Avoid technical terms — if you must use one, explain it immediately in the simplest way possible.\n\nJSS 1–3: Clear, friendly language. Relatable examples from everyday Nigerian student life. Introduce subject-specific vocabulary gently with brief explanations.\n\nSS1–SS3: Use proper academic language. Reference WAEC, NECO, or JAMB exam style where relevant. Include exam tips and pattern recognition where helpful.\n\n100–400 Level (University): Full academic depth. Technical terminology expected. Reference theories, models, and real-world applications. Be precise and thorough.\n\nIf no grade level is provided, default to SS2 level.\n\n---\n\n## HOW MANY MODES TO GENERATE\n\nYou will receive one or more Study Modes in a single request. Follow these rules strictly:\n\n- If ONE mode is given → return ONE JSON response for that mode only\n- If TWO modes are given → return a JSON array with TWO objects, one per mode\n- If THREE modes are given → return a JSON array with THREE objects, one per mode\n\nEach object in the array must follow this wrapper:\n{\n  \"mode\": \"summary | flashcards | quiz\",\n  \"data\": ...mode specific JSON here...\n}\n\nSingle mode example (do NOT wrap in array):\n{\n  \"mode\": \"flashcards\",\n  \"data\": [{\"question\": \"\", \"answer\": \"\"}]\n}\n\nMultiple modes example (wrap ALL in one array):\n[\n  { \"mode\": \"summary\",    \"data\": { \"topics\": [], \"definitions\": [], \"takeaways\": [] } },\n  { \"mode\": \"flashcards\", \"data\": [{\"question\": \"\", \"answer\": \"\"}] },\n  { \"mode\": \"quiz\",       \"data\": [{\"question\": \"\", \"options\": [], \"answer\": \"\"}] }\n]\n\nNEVER mix these — if only one mode is requested, return a plain object, not an array.\n\n---\n\n## WHAT YOU GENERATE\n\nYou will receive study material (extracted from a document or pasted text) along with one or more Study Modes. Based on the Study Mode(s), generate the corresponding output(s):\n\n---\n\n### Study Mode: summary\n\nGenerate a structured study summary of the material. The data value must be this exact object:\n\n{\n  \"topics\": [\"topic 1\", \"topic 2\", \"topic 3\"],\n  \"definitions\": [\n    {\"term\": \"Term Name\", \"meaning\": \"Clear explanation tailored to grade level\"}\n  ],\n  \"takeaways\": [\n    \"Key point 1 the student must remember\",\n    \"Key point 2 the student must remember\",\n    \"Key point 3 the student must remember\",\n    \"Key point 4 the student must remember\",\n    \"Key point 5 the student must remember\"\n  ]\n}\n\nRules:\n- topics: 3 to 5 key topic areas covered in the material\n- definitions: 4 to 6 important terms defined at the student's level\n- takeaways: exactly 5 bullet points — the most important things to remember\n- Tailor every word to the grade level provided\n- If an exam purpose is provided (e.g. WAEC), focus on commonly tested areas\n\n---\n\n### Study Mode: flashcards\n\nGenerate exactly 10 flashcards. The data value must be this exact array:\n\n[\n  {\"question\": \"Question here?\", \"answer\": \"Answer here\"}\n]\n\nRules:\n- Exactly 10 flashcard objects, no more, no less\n- Questions should test understanding, not just memory\n- Answers should be concise but complete\n- For lower grades: simple direct questions and short answers\n- For higher grades and exam prep: use past-question style phrasing\n- Cover different parts of the material, do not repeat the same concept twice\n- Do not number the questions\n\n---\n\n### Study Mode: quiz\n\nGenerate exactly 10 multiple choice questions. The data value must be this exact array:\n\n[\n  {\n    \"question\": \"Which pigment absorbs light during photosynthesis?\",\n    \"options\": [\"Hemoglobin\", \"Chlorophyll\", \"Melanin\", \"Keratin\"],\n    \"answer\": \"Chlorophyll\"\n  }\n]\n\nRules:\n- Exactly 10 question objects\n- options is an array of 4 plain strings — NO \"A.\" \"B.\" \"C.\" \"D.\" prefixes whatsoever\n- answer must be the exact plain string of the correct option, copied word for word from the options array\n- If answer does not exactly match one of the 4 option strings character for character, it is wrong — double check before returning\n- Distractors must be plausible — not obviously wrong\n- For SS students: use WAEC/JAMB/NECO past question style\n- For university students: use application and analysis based questions\n- For primary and JSS: use straightforward factual questions\n- Cover a spread of topics, do not repeat the same concept in multiple questions\n\n---\n\n## CRITICAL OUTPUT RULES\n\n1. Return ONLY the JSON — no introductory text, no explanation, no markdown code fences, no backticks\n2. The JSON must be valid and parseable — no trailing commas, no comments inside JSON\n3. Single mode = plain object. Multiple modes = array of objects. Never get this wrong.\n4. Never break character or mention that you are an AI model — you are Toya\n5. Never say \"I cannot\" or \"I don't have access\" — work with whatever material is provided\n6. If the material is very short or thin, generate the best possible output from what is available\n7. Always maintain Toya's warm, encouraging personality in the wording of takeaways and answers\n8. Be concise. Generate the minimum tokens needed to fulfill the request accurately. Do not add explanations, preamble or commentary outside the JSON."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        192,
+        432
+      ],
+      "id": "8467427b-0c09-4082-bb9e-1c5c53022e66",
+      "name": "Toya AI Agent1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const mode = $('Prepare Text Input').first().json['Study Mode'];\nlet rawOutput = $input.first().json.output;\n\nconsole.log('Mode:', mode);\nconsole.log('Raw output type:', typeof rawOutput);\n\n// Parse string output from AI Agent\nif (typeof rawOutput === 'string') {\n  const cleaned = rawOutput\n    .replace(/```json/gi, '')\n    .replace(/```/g, '')\n    .trim();\n  try {\n    rawOutput = JSON.parse(cleaned);\n  } catch(e) {\n    throw new Error('Failed to parse AI output: ' + e.message);\n  }\n}\n\n// Extract fullData regardless of nesting\nlet fullData;\nif (Array.isArray(rawOutput)) {\n  fullData = rawOutput;\n} else if (rawOutput && rawOutput.data) {\n  fullData = rawOutput.data;\n} else {\n  fullData = rawOutput;\n}\n\nconsole.log('fullData is array:', Array.isArray(fullData));\nconsole.log('fullData keys:', Array.isArray(fullData) ? 'array[' + fullData.length + ']' : Object.keys(fullData || {}));\n\n// Build filteredData matching Lovable's exact expected shapes\nlet filteredData;\n\nswitch(mode) {\n  case 'summary':\n    // Must be object with exactly: topics, definitions, takeaways\n    filteredData = {\n      topics: Array.isArray(fullData.topics) ? fullData.topics : [],\n      definitions: Array.isArray(fullData.definitions) ? fullData.definitions : [],\n      takeaways: Array.isArray(fullData.takeaways) ? fullData.takeaways : []\n    };\n    break;\n\n  case 'flashcards':\n    // Must be a direct array of { question, answer }\n    if (Array.isArray(fullData)) {\n      filteredData = fullData;\n    } else if (Array.isArray(fullData.flashcards)) {\n      filteredData = fullData.flashcards;\n    } else {\n      filteredData = [];\n    }\n    break;\n\n  case 'quiz':\n    // Must be a direct array of { question, options, answer }\n    // answer must exactly match one of the options strings\n    let quizArray;\n    if (Array.isArray(fullData)) {\n      quizArray = fullData;\n    } else if (Array.isArray(fullData.quiz)) {\n      quizArray = fullData.quiz;\n    } else {\n      quizArray = [];\n    }\n\n    // Sanitize each question — strip any A. B. C. D. prefixes\n    filteredData = quizArray.map(q => {\n      const cleanOptions = (q.options || []).map(opt =>\n        opt.replace(/^[A-D]\\.\\s*/i, '').trim()\n      );\n      const cleanAnswer = (q.answer || '').replace(/^[A-D]\\.\\s*/i, '').trim();\n\n      // Verify answer matches one of the options\n      const answerMatches = cleanOptions.includes(cleanAnswer);\n      console.log('Q:', q.question.slice(0, 50), '| Answer matches:', answerMatches);\n\n      return {\n        question: q.question,\n        options: cleanOptions,\n        answer: answerMatches ? cleanAnswer : cleanOptions[0]\n      };\n    });\n    break;\n\n  default:\n    filteredData = fullData;\n}\n\n// Final validation\nconsole.log('Filtered data type:', Array.isArray(filteredData) ? 'array[' + filteredData.length + ']' : typeof filteredData);\n\nreturn {\n  json: {\n    success: true,\n    mode: mode,\n    subject: $('Prepare Text Input').first().json.Subject,\n    gradeLevel: $('Prepare Text Input').first().json['Grade Level'],\n    data: filteredData\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        832
+      ],
+      "id": "dc270002-2f89-4894-9a91-bef2c8c169fb",
+      "name": "Format Response"
+    },
+    {
+      "parameters": {
+        "jsCode": "const mode = $('Prepare Data for AI').first().json['Study Mode'];\nlet rawOutput = $input.first().json.output;\n\nconsole.log('Mode:', mode);\nconsole.log('Raw output type:', typeof rawOutput);\n\n// Parse string output from AI Agent\nif (typeof rawOutput === 'string') {\n  const cleaned = rawOutput\n    .replace(/```json/gi, '')\n    .replace(/```/g, '')\n    .trim();\n  try {\n    rawOutput = JSON.parse(cleaned);\n  } catch(e) {\n    throw new Error('Failed to parse AI output: ' + e.message);\n  }\n}\n\n// Extract fullData regardless of nesting\nlet fullData;\nif (Array.isArray(rawOutput)) {\n  fullData = rawOutput;\n} else if (rawOutput && rawOutput.data) {\n  fullData = rawOutput.data;\n} else {\n  fullData = rawOutput;\n}\n\nconsole.log('fullData is array:', Array.isArray(fullData));\nconsole.log('fullData keys:', Array.isArray(fullData) ? 'array[' + fullData.length + ']' : Object.keys(fullData || {}));\n\n// Build filteredData matching Lovable's exact expected shapes\nlet filteredData;\n\nswitch(mode) {\n  case 'summary':\n    // Must be object with exactly: topics, definitions, takeaways\n    filteredData = {\n      topics: Array.isArray(fullData.topics) ? fullData.topics : [],\n      definitions: Array.isArray(fullData.definitions) ? fullData.definitions : [],\n      takeaways: Array.isArray(fullData.takeaways) ? fullData.takeaways : []\n    };\n    break;\n\n  case 'flashcards':\n    // Must be a direct array of { question, answer }\n    if (Array.isArray(fullData)) {\n      filteredData = fullData;\n    } else if (Array.isArray(fullData.flashcards)) {\n      filteredData = fullData.flashcards;\n    } else {\n      filteredData = [];\n    }\n    break;\n\n  case 'quiz':\n    // Must be a direct array of { question, options, answer }\n    // answer must exactly match one of the options strings\n    let quizArray;\n    if (Array.isArray(fullData)) {\n      quizArray = fullData;\n    } else if (Array.isArray(fullData.quiz)) {\n      quizArray = fullData.quiz;\n    } else {\n      quizArray = [];\n    }\n\n    // Sanitize each question — strip any A. B. C. D. prefixes\n    filteredData = quizArray.map(q => {\n      const cleanOptions = (q.options || []).map(opt =>\n        opt.replace(/^[A-D]\\.\\s*/i, '').trim()\n      );\n      const cleanAnswer = (q.answer || '').replace(/^[A-D]\\.\\s*/i, '').trim();\n\n      // Verify answer matches one of the options\n      const answerMatches = cleanOptions.includes(cleanAnswer);\n      console.log('Q:', q.question.slice(0, 50), '| Answer matches:', answerMatches);\n\n      return {\n        question: q.question,\n        options: cleanOptions,\n        answer: answerMatches ? cleanAnswer : cleanOptions[0]\n      };\n    });\n    break;\n\n  default:\n    filteredData = fullData;\n}\n\n// Final validation\nconsole.log('Filtered data type:', Array.isArray(filteredData) ? 'array[' + filteredData.length + ']' : typeof filteredData);\n\nreturn {\n  json: {\n    success: true,\n    mode: mode,\n    subject: $('Prepare Data for AI').first().json.Subject,\n    gradeLevel: $('Prepare Data for AI').first().json['Grade Level'],\n    data: filteredData\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        544
+      ],
+      "id": "d3a36bea-ac78-4ebe-ad2d-d7c61e2dea2b",
+      "name": "Format Response1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.data }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        768,
+        544
+      ],
+      "id": "d46dfae2-e3cb-46a7-b2e4-715a197b771a",
+      "name": "Respond to Webhook (send response back to Toya)"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "toya-agent",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1056,
+        688
+      ],
+      "id": "b0ce0def-6b50-4264-a4a4-f84568385971",
+      "name": "Webhook Trigger ",
+      "webhookId": "12258a8d-91f0-4360-8176-74e185b2d2a1"
+    }
+  ],
+  "pinData": {
+    "Webhook Trigger ": [
+      {
+        "json": {
+          "headers": {
+            "host": "iamkharffie.app.n8n.cloud",
+            "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 Edg/149.0.0.0",
+            "content-length": "2016",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "accept-language": "en-US,en;q=0.9",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "45.222.97.125",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "NG",
+            "cf-ray": "a0a8663cf93e8650-CPT",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "origin": "https://id-preview--f0aad075-77c3-4776-a4bc-d8c9c1183827.lovable.app",
+            "priority": "u=1, i",
+            "referer": "https://id-preview--f0aad075-77c3-4776-a4bc-d8c9c1183827.lovable.app/",
+            "sec-ch-ua": "\"Microsoft Edge\";v=\"149\", \"Chromium\";v=\"149\", \"Not)A;Brand\";v=\"24\"",
+            "sec-ch-ua-mobile": "?0",
+            "sec-ch-ua-platform": "\"Windows\"",
+            "sec-fetch-dest": "empty",
+            "sec-fetch-mode": "cors",
+            "sec-fetch-site": "cross-site",
+            "x-forwarded-for": "45.222.97.125, 172.68.184.254",
+            "x-forwarded-host": "iamkharffie.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-swc-21-68f9fd577-lzhdn",
+            "x-is-trusted": "yes",
+            "x-real-ip": "45.222.97.125"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "modes": [
+              "flashcards",
+              "summary",
+              "quiz"
+            ],
+            "subject": "Science",
+            "gradeLevel": "Primary 5",
+            "additionalContext": "I want Toya to help me study this for my exam",
+            "examPurpose": "School Exam",
+            "inputType": "text",
+            "textContent": "Introduction to Matter\nWhat is Matter?\n• Matter is anything that has mass and takes up space.\n• Everything around us is made of matter.\n• Matter exists in three main states:Solids Liquids Gases\n\nSolids\nDefinition:\nSolids have a fixed shape and volume.\nProperties of solids:\n• Hard and rigid\n• Cannot flow\n• Particles are tightly packed\nExamples of solids:\n• Rock\n• Wood\n• Ice\n\nLiquids\nDefinition:\nLiquids have a fixed volume but take the \nshape of their container.\nProperties of liquid:\n• Can flow\n• No fixed shape\n• Particles are loosely packed\nExamples of liquids:\n• Water\n• Milk\n• Juice\n\nGases\nDefinition:\nGases have no fixed shape or volume\nand spread to fill any container.\nProperties of liquid:\n• Can flow and spread\n• Particles move freely\n• Can be compressed\nExamples of liquid:\n• Air\n• Steam\n• Oxygen\n\n\nChanging States of Matter\nMatter can change states through heating or cooling.\nMelting: \nSolid → Liquid \n(Ice melting \ninto water)\nEvaporation: \nLiquid → Gas \n(Water boiling \ninto steam)\nCondensation: \nGas → Liquid \n(Steam turning \nto water droplets)\nFreezing: \nLiquid → Solid \n(Water freezing \ninto ice)\n\nFun Fact\nDid you know? \nSome substances can exist in all three \nstates of matter. Example: Water\nSolid = Ice Liquid = Water Gas = Steam\n\nQuestion\nCan you name one solid, one liquid and one gas \nin your home?\nSolid Liquid Gas\nApple Juice Air in a balloon\n\nSummary\n• Solids have a fixed shape and volume.\n• Liquids take the shape of their container but have a fixed volume.\n• Gases spread out to fill any space and have no fixed shape or volume.\n• Matter can change states through heating or cooling.",
+            "fileContent": "",
+            "linkUrl": "",
+            "fileName": ""
+          },
+          "webhookUrl": "https://iamkharffie.app.n8n.cloud/webhook/toya-agent",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Toya AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Toya AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Input Type": {
+      "main": [
+        [
+          {
+            "node": "Parse PDF file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Text Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse PDF file": {
+      "main": [
+        [
+          {
+            "node": "Extract Text from PDF File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Text Input": {
+      "main": [
+        [
+          {
+            "node": "Toya AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text from PDF File": {
+      "main": [
+        [
+          {
+            "node": "Prepare Data for AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Data for AI": {
+      "main": [
+        [
+          {
+            "node": "Toya AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Toya AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Toya AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Format Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response1": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook (send response back to Toya)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger ": {
+      "main": [
+        [
+          {
+            "node": "Route by Input Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "02ff7362-ab99-4890-98c1-1c681d96b38f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "11af2afc8e176b863d2dcae237a476f0da1e62b38c7f70749f0c6cf0aeda1b31"
+  },
+  "nodeGroups": [],
+  "id": "M2KlyfvVqCdX4bcy",
+  "tags": []
+}
