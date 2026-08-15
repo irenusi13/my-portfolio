@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --color-ink: #0b1220;
-  --color-ink-raised: #101a2e;
-  --color-paper: #f2efe9;
-  --color-paper-dim: #c8c4bb;
-  --color-teal: #3fa9a0;
-  --color-teal-soft: #2c7d76;
-  --color-amber: #e8a33d;
-  --color-slate: #8892a6;
-  --color-line: #1c2740;
+  --color-ink: #fafaf8;
+  --color-ink-raised: #ffffff;
+  --color-paper: #191d24;
+  --color-paper-dim: #5b6472;
+  --color-teal: #0f766e;
+  --color-teal-soft: #0b5c56;
+  --color-amber: #b45309;
+  --color-slate: #71798a;
+  --color-line: #e5e3dd;
 }
 
 @theme inline {
@@ -22,9 +22,9 @@
   --color-amber: var(--color-amber);
   --color-slate: var(--color-slate);
   --color-line: var(--color-line);
-  --font-display: var(--font-space-grotesk);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-jetbrains-mono);
+  --font-display: var(--font-sora);
+  --font-sans: var(--font-plus-jakarta-sans);
+  --font-mono: var(--font-ibm-plex-mono);
 }
 
 * {
@@ -44,7 +44,7 @@ body {
 
 ::selection {
   background: var(--color-teal);
-  color: var(--color-ink);
+  color: #ffffff;
 }
 
 :focus-visible {
