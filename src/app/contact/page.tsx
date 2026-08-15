@@ -28,11 +28,11 @@ export default function ContactPage() {
 
           <div className="mt-10 flex flex-wrap gap-4">
             <a
-              href="mailto:hello@olorire.dev"
+              href="mailto:oloriresanusi@gmail.com"
               className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 font-sans text-sm text-paper-dim transition-colors hover:border-paper-dim hover:text-paper"
             >
               <Mail size={15} />
-              hello@olorire.dev
+              oloriresanusi@gmail.com
             </a>
             <a
               href="https://www.linkedin.com/in/olorire-sanusi"

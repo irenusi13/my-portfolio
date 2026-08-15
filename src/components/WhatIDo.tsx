@@ -1,29 +1,35 @@
-import { Bot, Route, Stethoscope, LineChart } from "lucide-react";
+import { Bot, Route, Workflow, Cable, LineChart } from "lucide-react";
 
 const items = [
   {
     icon: Bot,
-    title: "AI agents and support automation",
+    title: "AI automation",
     description:
-      "Assistants that draft, classify, and respond from a real knowledge base — with confidence thresholds that route uncertainty to a human, not a guess.",
+      "End-to-end workflows that take repetitive business processes from manual to automated, from lead capture and follow-up to customer communication and internal operations.",
   },
   {
     icon: Route,
-    title: "Lead capture and routing systems",
+    title: "AI agents",
     description:
-      "End-to-end pipelines that qualify inbound leads the moment they arrive and route them to the right owner with context attached.",
+      "AI-powered agents that understand requests, retrieve information, make decisions, and trigger actions across support, enquiries, voice, and task-specific workflows.",
   },
   {
-    icon: Stethoscope,
-    title: "Operational and healthcare workflows",
+    icon: Workflow,
+    title: "Workflow and process automation",
     description:
-      "Appointment booking, reminders, and internal ops workflows designed with an understanding of the process on the other end — not just the API.",
+      "Connected systems that move information between forms, CRMs, spreadsheets, email, messaging platforms, and other tools without relying on manual handoffs.",
+  },
+  {
+    icon: Cable,
+    title: "API and tool integration",
+    description:
+      "Reliable connections between the systems a business already uses, with the right validation, data handling, and failure paths built into the workflow.",
   },
   {
     icon: LineChart,
-    title: "Workflow audits",
+    title: "AI-powered business operations",
     description:
-      "Architecture reviews that catch what a first build misses: silent failure branches, unpopulated fields, redundant calls, missing error handling.",
+      "Process design that separates where AI adds judgment from where deterministic rules and human review make more sense.",
   },
 ];
 
@@ -35,10 +41,10 @@ export default function WhatIDo() {
           What I do
         </p>
         <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold leading-tight text-paper md:text-4xl">
-          Four ways I remove repetitive work from a team
+          Building systems around the work that needs to get done
         </h2>
 
-        <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2">
+        <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
           {items.map(({ icon: Icon, title, description }) => (
             <div key={title} className="bg-ink p-7 md:p-8">
               <Icon className="text-teal" size={22} strokeWidth={1.75} />

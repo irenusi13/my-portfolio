@@ -13,7 +13,7 @@ export default function FeaturedProjects() {
               Selected work
             </p>
             <h2 className="mt-3 max-w-xl font-display text-3xl font-semibold leading-tight text-paper md:text-4xl">
-              Systems built to remove repetitive work, not add complexity
+              Systems I&apos;ve built to solve real operational problems
             </h2>
           </div>
           <Link

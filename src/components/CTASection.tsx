@@ -6,12 +6,12 @@ export default function CTASection() {
     <section className="border-t border-line py-24 md:py-32">
       <div className="container-page text-center">
         <h2 className="mx-auto max-w-2xl font-display text-3xl font-semibold leading-tight text-paper md:text-4xl">
-          Have a repetitive workflow that's costing your team hours every
-          week?
+          Have a process that is slowing your team down?
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-sm leading-relaxed text-paper-dim md:text-base">
-          Tell me what's eating up your team's time — I'll tell you honestly
-          whether automation is the right fix, and what that would look like.
+          Tell me what is happening today. I&apos;ll help you work out whether
+          automation is the right answer and what a dependable solution could
+          look like.
         </p>
         <Link
           href="/contact"

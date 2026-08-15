@@ -23,30 +23,30 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://olorire.dev"),
   title: {
-    default: "Olorire Sanusi — Registered Nurse & AI Automation Specialist",
+    default: "Olorire Sanusi — AI Automation Specialist",
     template: "%s — Olorire Sanusi",
   },
   description:
-    "I design and build AI-powered automation systems for support, sales, and operations — grounded in years of hands-on experience inside real-world workflows.",
+    "I design and build AI-powered systems for sales, support, customer operations, and repetitive business processes.",
   keywords: [
     "AI automation specialist",
     "n8n developer",
     "workflow automation",
     "AI agent developer",
-    "healthcare automation",
+    "business automation",
     "Olorire Sanusi",
   ],
   openGraph: {
-    title: "Olorire Sanusi — Registered Nurse & AI Automation Specialist",
+    title: "Olorire Sanusi — AI Automation Specialist",
     description:
-      "AI-powered automation systems for support, sales, and operations — built by someone who has worked the real-world workflows first.",
+      "AI-powered systems for sales, support, customer operations, and repetitive business processes.",
     url: "https://olorire.dev",
     siteName: "Olorire Sanusi",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Olorire Sanusi — Registered Nurse & AI Automation Specialist",
+    title: "Olorire Sanusi — AI Automation Specialist",
     description:
       "AI-powered automation systems for support, sales, and operations.",
   },

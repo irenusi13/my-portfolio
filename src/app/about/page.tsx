@@ -6,7 +6,7 @@ import CTASection from "@/components/CTASection";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Registered Nurse and AI & Automation Specialist — why I work at the intersection of clinical operations and automated systems.",
+    "AI Automation Specialist focused on building dependable systems for sales, support, customer operations, and business workflows.",
 };
 
 const skillGroups = [
@@ -33,9 +33,11 @@ const skillGroups = [
       "Airtable",
       "Google Sheets",
       "Google Forms",
+      "HubSpot",
       "Slack",
       "WhatsApp / Telegram APIs",
       "OpenAI",
+      "Groq",
     ],
   },
 ];
@@ -50,39 +52,36 @@ export default function AboutPage() {
             About
           </p>
           <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-paper md:text-4xl">
-            Registered Nurse and AI &amp; Automation Specialist
+            I build systems that make repetitive work easier to manage.
           </h1>
 
           <div className="mt-10 space-y-6 text-base leading-relaxed text-paper-dim">
             <p>
-              I work at the intersection of two fields that don&apos;t
-              usually share a resume: clinical nursing and AI automation.
-              I&apos;m a Registered Nurse, and I&apos;m also the person
-              teams call when a repetitive process — one that used to take a
-              person hours every week — needs to run itself.
+              I&apos;m an AI Automation Specialist focused on solving business
+              problems with intelligent systems. I&apos;m interested in what
+              happens behind the scenes: how a lead gets handled, how a
+              customer receives a response, how a team knows what needs
+              attention, and what happens when one part of a process fails.
             </p>
             <p>
-              These aren&apos;t two separate chapters. They inform each
-              other. Nursing gave me a close, sometimes uncomfortable view of
-              how operational friction actually plays out — a missed
-              reminder, a manual handoff, a form nobody follows up on. That's
-              the lens I bring when I design automation: not &quot;what can
-              this API do,&quot; but &quot;what does the person on the other
-              end of this process actually need to happen.&quot;
+              I design AI-powered workflows that connect the tools businesses
+              already use and turn manual processes into systems that can
+              capture information, make decisions, take action, and escalate
+              when human input is needed.
             </p>
             <p>
-              On the automation side, I design and build systems using n8n,
-              AI agents, and LLM APIs — from AI support agents grounded in a
-              real knowledge base, to lead qualification and routing
-              pipelines, to healthcare workflows that handle scheduling and
-              reminders without manual tracking. I hold a Bachelor of Nursing
-              Science, alongside certifications in Data Analysis and AI
-              Automation.
+              My work spans AI agents, workflow automation, API integrations,
+              customer operations, lead management, and internal business
+              processes. I use tools such as n8n, AI models, CRMs,
+              communication platforms, databases, and custom APIs to build
+              complete workflows rather than isolated automations.
             </p>
             <p>
-              I care about building systems a non-technical team can actually
-              trust: AI drafts, humans decide. That principle runs through
-              every workflow I build, healthcare or otherwise.
+              I care about more than getting a workflow to run once. I think
+              about validation, edge cases, duplicate prevention, error
+              handling, human review, and what happens when something goes
+              wrong. Good automation is not just about making a process
+              faster. It is about making the process dependable.
             </p>
           </div>
 
